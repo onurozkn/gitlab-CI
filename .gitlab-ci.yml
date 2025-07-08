@@ -1,9 +1,13 @@
 stages:
   - build
-  - deploy
+  - push
+  - update
 
 variables:
-  IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
+  IMAGE_NAME: dockerhub/frontend # Burayı kendi image adınla değiştir
+  IMAGE_TAG: ${CI_COMMIT_REF_NAME}_${CI_PIPELINE_ID}
+  FULL_IMAGE: $IMAGE_NAME:$IMAGE_TAG
+  SERVICE_NAME: dev_frontend # Burayı kendi servis adınla değiştir
 
 build:
   stage: build
@@ -11,22 +15,42 @@ build:
   services:
     - docker:dind
   script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
+    - cd frontend
+    - echo "BUILDING FRONTEND..."
+    - docker build -t $FULL_IMAGE .
+    - echo "FRONTEND BUILD COMPLETED."
+  artifacts:
+    paths:
+      - frontend
 
-deploy:
-  stage: deploy
+push:
+  stage: push
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo "First docker login !"
+    - echo $DOCKERHUB_WRITE_PSW | docker login -u $DOCKERHUB_WRITE_USR --password-stdin
+    - echo "PUSHING FRONTEND..."
+    - docker push $FULL_IMAGE
+    - echo "PUSHED FRONTEND."
+  dependencies:
+    - build
+
+update:
+  stage: update
   image: alpine:latest
   before_script:
-    - apk add --no-cache openssh
+    - apk add --no-cache docker-cli openssh
   script:
+    - echo "First is first, login docker !"
+    - echo $DOCKERHUB_READ_PSW | docker login -u $DOCKERHUB_READ_USR --password-stdin
     - |
       ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_SERVER "
-        docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
-        docker pull $IMAGE_TAG &&
-        cd /path/to/your/compose &&
-        docker compose up -d
+        sleep 1
+        docker service update --with-registry-auth --image $FULL_IMAGE $SERVICE_NAME
       "
   only:
-    - main 
+    - main
+  dependencies:
+    - push 
