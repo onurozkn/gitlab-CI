@@ -15,15 +15,26 @@ build_and_push:
     - docker:dind
   script:
     - |
-      echo "BUILDING IMAGE: ${FULL_IMAGE}"
-      docker build -t "${FULL_IMAGE}" .
+      # Değişkenleri temizle
+      CLEAN_IMAGE_NAME=$(echo "$IMAGE_NAME" | tr -d '\n\r')
+      CLEAN_IMAGE_TAG=$(echo "$IMAGE_TAG" | tr -d '\n\r')
+      CLEAN_FULL_IMAGE="${CLEAN_IMAGE_NAME}:${CLEAN_IMAGE_TAG}"
+      
+      echo "BUILDING IMAGE: ${CLEAN_FULL_IMAGE}"
+      docker build -t "${CLEAN_FULL_IMAGE}" .
       echo "BUILD COMPLETED."
 
       echo "Logging into GitLab Container Registry..."
       echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-      echo "PUSHING IMAGE TO REGISTRY: ${FULL_IMAGE}"
-      docker push "${FULL_IMAGE}"
+      echo "PUSHING IMAGE TO REGISTRY: ${CLEAN_FULL_IMAGE}"
+      docker push "${CLEAN_FULL_IMAGE}"
       echo "PUSH COMPLETED."
+      
+      # Temizlenmiş değişkenleri sonraki job için export et
+      echo "CLEAN_FULL_IMAGE=${CLEAN_FULL_IMAGE}" > build_vars.env
+  artifacts:
+    reports:
+      dotenv: build_vars.env
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
