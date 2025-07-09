@@ -30,7 +30,7 @@ build_and_push:
 update:
   stage: update
   tags:
-    - docker-swarm  # Sunucunuzdaki runner'ın tag'i
+    - 60.33_runner  # Sunucunuzdaki runner'ın tag'i
   script:
     - echo "Logging into GitLab Container Registry..."
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
