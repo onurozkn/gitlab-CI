@@ -4,10 +4,10 @@ stages:
   - update
 
 variables:
-  IMAGE_NAME: dockerhub/frontend # Burayı kendi image adınla değiştir
-  IMAGE_TAG: ${CI_COMMIT_REF_NAME}_${CI_PIPELINE_ID}
+  IMAGE_NAME: $CI_REGISTRY_IMAGE/test_kode   # Örnek: registry.gitlab.com/onur/projeadi/test_kode
+  IMAGE_TAG: dev_${CI_PIPELINE_ID}           # Örnek: dev_42
   FULL_IMAGE: $IMAGE_NAME:$IMAGE_TAG
-  SERVICE_NAME: dev_frontend # Burayı kendi servis adınla değiştir
+  SERVICE_NAME: dev_frontend                 # Sunucundaki docker service adı
 
 build:
   stage: build
@@ -15,13 +15,9 @@ build:
   services:
     - docker:dind
   script:
-    - cd frontend
-    - echo "BUILDING FRONTEND..."
+    - echo "BUILDING IMAGE: $FULL_IMAGE"
     - docker build -t $FULL_IMAGE .
-    - echo "FRONTEND BUILD COMPLETED."
-  artifacts:
-    paths:
-      - frontend
+    - echo "BUILD COMPLETED."
 
 push:
   stage: push
@@ -29,11 +25,11 @@ push:
   services:
     - docker:dind
   script:
-    - echo "First docker login !"
-    - echo $DOCKERHUB_WRITE_PSW | docker login -u $DOCKERHUB_WRITE_USR --password-stdin
-    - echo "PUSHING FRONTEND..."
+    - echo "Logging into GitLab Container Registry..."
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - echo "PUSHING IMAGE TO REGISTRY: $FULL_IMAGE"
     - docker push $FULL_IMAGE
-    - echo "PUSHED FRONTEND."
+    - echo "PUSH COMPLETED."
   dependencies:
     - build
 
@@ -41,16 +37,19 @@ update:
   stage: update
   image: alpine:latest
   before_script:
-    - apk add --no-cache docker-cli openssh
+    - apk add --no-cache openssh docker-cli
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
   script:
-    - echo "First is first, login docker !"
-    - echo $DOCKERHUB_READ_PSW | docker login -u $DOCKERHUB_READ_USR --password-stdin
+    - echo "Logging into GitLab Container Registry on remote server..."
     - |
       ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_SERVER "
-        sleep 1
+        echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
         docker service update --with-registry-auth --image $FULL_IMAGE $SERVICE_NAME
       "
   only:
     - main
   dependencies:
-    - push 
+    - push
