@@ -14,15 +14,16 @@ build_and_push:
   services:
     - docker:dind
   script:
-    - echo "BUILDING IMAGE: ${FULL_IMAGE}"
-    - docker build -t "${FULL_IMAGE}" .
-    - echo "BUILD COMPLETED."
+    - |
+      echo "BUILDING IMAGE: ${FULL_IMAGE}"
+      docker build -t "${FULL_IMAGE}" .
+      echo "BUILD COMPLETED."
 
-    - echo "Logging into GitLab Container Registry..."
-    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-    - echo "PUSHING IMAGE TO REGISTRY: ${FULL_IMAGE}"
-    - docker push "${FULL_IMAGE}"
-    - echo "PUSH COMPLETED."
+      echo "Logging into GitLab Container Registry..."
+      echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+      echo "PUSHING IMAGE TO REGISTRY: ${FULL_IMAGE}"
+      docker push "${FULL_IMAGE}"
+      echo "PUSH COMPLETED."
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
