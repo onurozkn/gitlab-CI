@@ -29,7 +29,8 @@ build_and_push:
 
 update:
   stage: update
-  image: docker:latest
+  tags:
+    - docker-swarm  # Sunucunuzdaki runner'ın tag'i
   script:
     - echo "Logging into GitLab Container Registry..."
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
