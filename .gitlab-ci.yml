@@ -4,10 +4,10 @@ stages:
   - update
 
 variables:
-  IMAGE_NAME: $CI_REGISTRY_IMAGE/test_kode   # Örnek: registry.gitlab.com/onur/projeadi/test_kode
-  IMAGE_TAG: dev_${CI_PIPELINE_ID}           # Örnek: dev_42
-  FULL_IMAGE: $IMAGE_NAME:$IMAGE_TAG
-  SERVICE_NAME: dev_frontend                 # Sunucundaki docker service adı
+  IMAGE_NAME: $CI_REGISTRY_IMAGE/test_kode
+  IMAGE_TAG: dev_${CI_PIPELINE_ID}
+  FULL_IMAGE: "${IMAGE_NAME}:${IMAGE_TAG}"
+  SERVICE_NAME: dev_frontend
 
 build:
   stage: build
@@ -15,9 +15,10 @@ build:
   services:
     - docker:dind
   script:
-    - echo "BUILDING IMAGE: $FULL_IMAGE"
-    - docker build -t $FULL_IMAGE .
-    - echo "BUILD COMPLETED."
+    - |
+      echo "BUILDING IMAGE: ${FULL_IMAGE}"
+      docker build -t "${FULL_IMAGE}" .
+      echo "BUILD COMPLETED."
 
 push:
   stage: push
@@ -25,11 +26,12 @@ push:
   services:
     - docker:dind
   script:
-    - echo "Logging into GitLab Container Registry..."
-    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-    - echo "PUSHING IMAGE TO REGISTRY: $FULL_IMAGE"
-    - docker push $FULL_IMAGE
-    - echo "PUSH COMPLETED."
+    - |
+      echo "Logging into GitLab Container Registry..."
+      echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+      echo "PUSHING IMAGE TO REGISTRY: ${FULL_IMAGE}"
+      docker push "${FULL_IMAGE}"
+      echo "PUSH COMPLETED."
   dependencies:
     - build
 
@@ -37,21 +39,20 @@ update:
   stage: update
   image: alpine:latest
   before_script:
-    - apk add --no-cache openssh docker-cli
-    - mkdir -p ~/.ssh
-    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - ssh-keyscan -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
-  script:
-    - echo "Logging into GitLab Container Registry on remote server..."
-    - ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_SERVER "echo SSH connection successful"
-
     - |
-      ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_SERVER "
-        echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-        docker service update --with-registry-auth --image $FULL_IMAGE $SERVICE_NAME
-      "
-  only:
-    - main
+      apk add --no-cache openssh docker-cli
+      mkdir -p ~/.ssh
+      echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+      chmod 600 ~/.ssh/id_rsa
+      ssh-keyscan -H "$DEPLOY_SERVER" >> ~/.ssh/known_hosts
+  script:
+    - |
+      echo "Logging into GitLab Container Registry on remote server..."
+      ssh -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_SERVER" "echo SSH connection successful"
+      ssh -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_SERVER" \
+        "echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY && \
+        docker service update --with-registry-auth --image $FULL_IMAGE $SERVICE_NAME"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
   dependencies:
     - push
