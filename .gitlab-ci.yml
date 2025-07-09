@@ -1,6 +1,5 @@
 stages:
-  - build
-  - push
+  - build_push
   - update
 
 variables:
@@ -9,8 +8,8 @@ variables:
   FULL_IMAGE: "${IMAGE_NAME}:${IMAGE_TAG}"
   SERVICE_NAME: dev_frontend
 
-build:
-  stage: build
+build_and_push:
+  stage: build_push
   image: docker:latest
   services:
     - docker:dind
@@ -20,20 +19,13 @@ build:
       docker build -t "${FULL_IMAGE}" .
       echo "BUILD COMPLETED."
 
-push:
-  stage: push
-  image: docker:latest
-  services:
-    - docker:dind
-  script:
-    - |
       echo "Logging into GitLab Container Registry..."
       echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
       echo "PUSHING IMAGE TO REGISTRY: ${FULL_IMAGE}"
       docker push "${FULL_IMAGE}"
       echo "PUSH COMPLETED."
-  dependencies:
-    - build
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
 
 update:
   stage: update
@@ -49,10 +41,10 @@ update:
     - |
       echo "Logging into GitLab Container Registry on remote server..."
       ssh -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_SERVER" "echo SSH connection successful"
-      ssh -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_SERVER" \
-        "echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY && \
+      ssh -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_SERVER" "
+        echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY && \
         docker service update --with-registry-auth --image $FULL_IMAGE $SERVICE_NAME"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   dependencies:
-    - push
+    - build_and_push
