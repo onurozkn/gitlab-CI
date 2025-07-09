@@ -44,6 +44,8 @@ update:
     - ssh-keyscan -H $DEPLOY_SERVER >> ~/.ssh/known_hosts
   script:
     - echo "Logging into GitLab Container Registry on remote server..."
+    - ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_SERVER "echo SSH connection successful"
+
     - |
       ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_SERVER "
         echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
