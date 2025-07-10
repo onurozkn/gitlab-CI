@@ -15,7 +15,7 @@ build_and_push:
     DOCKER_TLS_CERTDIR: ""
   script:
     - |
-      # Tüm GitLab CI değişkenlerini temizle
+      # Tüm GitLab CI değişkenlerini temizle ve değerleri oluştur
       CLEAN_REGISTRY_IMAGE=$(echo "$CI_REGISTRY_IMAGE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
       CLEAN_REGISTRY=$(echo "$CI_REGISTRY" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
       CLEAN_REGISTRY_USER=$(echo "$CI_REGISTRY_USER" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
@@ -53,7 +53,7 @@ build_and_push:
 
 update:
   stage: update
-  image: docker:latest
+  image: docker:latest  # Bu image Docker CLI içerir, böylece docker komutları çalışır
   script:
     - |
       # Eğer önceki job'dan gelen değişkenler yoksa, yeniden oluştur
@@ -63,15 +63,9 @@ update:
         IMAGE_TAG="dev_${CI_PIPELINE_ID}"
         FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
       fi
-      
-      if [ -z "$CLEAN_REGISTRY" ]; then
-        CLEAN_REGISTRY=$(echo "$CI_REGISTRY" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
-        CLEAN_REGISTRY_USER=$(echo "$CI_REGISTRY_USER" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
-        CLEAN_JOB_TOKEN=$(echo "$CI_JOB_TOKEN" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
-      fi
-      
+
       echo "Logging into GitLab Container Registry..."
-      echo "$CLEAN_JOB_TOKEN" | docker login -u "$CLEAN_REGISTRY_USER" --password-stdin "$CLEAN_REGISTRY"
+      echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
       echo "Updating Docker service with image: ${FULL_IMAGE}"
       docker service update --with-registry-auth --image "${FULL_IMAGE}" "$SERVICE_NAME"
   rules:
