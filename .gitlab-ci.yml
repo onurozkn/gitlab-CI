@@ -13,23 +13,24 @@ build_and_push:
   image: docker:latest
   services:
     - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
   script:
-    - |
-      echo "BUILDING IMAGE: ${FULL_IMAGE}"
-      docker build -t "${FULL_IMAGE}" .
-      echo "BUILD COMPLETED."
-
-      echo "Logging into GitLab Container Registry..."
-      echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-      echo "PUSHING IMAGE TO REGISTRY: ${FULL_IMAGE}"
-      docker push "${FULL_IMAGE}"
-      echo "PUSH COMPLETED."
+    - echo "BUILDING IMAGE: ${FULL_IMAGE}"
+    - docker build -t "${FULL_IMAGE}" .
+    - echo "BUILD COMPLETED."
+    - echo "Logging into GitLab Container Registry..."
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - echo "PUSHING IMAGE TO REGISTRY: ${FULL_IMAGE}"
+    - docker push "${FULL_IMAGE}"
+    - echo "PUSH COMPLETED."
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
 update:
   stage: update
-  image: docker:latest
+  # Shell executor kullanıldığından image tanımlamaya gerek yok
   script:
     - echo "Logging into GitLab Container Registry..."
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
