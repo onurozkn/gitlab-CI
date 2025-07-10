@@ -53,6 +53,7 @@ build_and_push:
 
 update:
   stage: update
+  image: docker:latest
   script:
     - |
       # Eğer önceki job'dan gelen değişkenler yoksa, yeniden oluştur
