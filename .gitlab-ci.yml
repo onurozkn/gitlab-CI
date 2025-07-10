@@ -54,6 +54,11 @@ build_and_push:
 update:
   stage: update
   image: docker:latest  # Bu image Docker CLI içerir, böylece docker komutları çalışır
+  services:
+    - docker:dind  # Buraya ekle
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
   script:
     - |
       # Eğer önceki job'dan gelen değişkenler yoksa, yeniden oluştur
