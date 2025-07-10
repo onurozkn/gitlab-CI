@@ -59,8 +59,12 @@ update:
   variables:
     DOCKER_HOST: tcp://docker:2375/
     DOCKER_TLS_CERTDIR: ""
+  tags:
+    - 60.33_runner
   script:
     - |
+      echo "FULL_IMAGE: $FULL_IMAGE"
+      docker info
       # Eğer önceki job'dan gelen değişkenler yoksa, yeniden oluştur
       if [ -z "$FULL_IMAGE" ]; then
         CLEAN_REGISTRY_IMAGE=$(echo "$CI_REGISTRY_IMAGE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
