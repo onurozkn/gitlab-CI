@@ -3,7 +3,7 @@ stages:
   - update
 
 variables:
-  IMAGE_NAME: $CI_REGISTRY_IMAGE/test_kode
+  IMAGE_NAME: "$CI_REGISTRY_IMAGE/test_kode"
   IMAGE_TAG: dev_${CI_PIPELINE_ID}
   FULL_IMAGE: "${IMAGE_NAME}:${IMAGE_TAG}"
   SERVICE_NAME: dev_frontend
