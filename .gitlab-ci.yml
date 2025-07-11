@@ -17,13 +17,13 @@ build_and_push:
   variables:
     DOCKER_HOST: tcp://docker:2375/
     DOCKER_TLS_CERTDIR: ""
-  script:
-    - echo "BUILDING IMAGE: ${FULL_IMAGE}"
-    - docker build -t "${FULL_IMAGE}" .
-    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-    - docker push "${FULL_IMAGE}"
-    - echo "FULL_IMAGE=${FULL_IMAGE}" >> build_vars.env
-    - echo "IMAGE_TAG=${IMAGE_TAG}" >> build_vars.env
+  script: |
+    echo "BUILDING IMAGE: ${FULL_IMAGE}"
+    docker build -t "${FULL_IMAGE}" .
+    echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    docker push "${FULL_IMAGE}"
+    echo "FULL_IMAGE=${FULL_IMAGE}" >> build_vars.env
+    echo "IMAGE_TAG=${IMAGE_TAG}" >> build_vars.env
   artifacts:
     reports:
       dotenv: build_vars.env
@@ -38,12 +38,12 @@ update:
     - echo "Checking Docker availability..."
     - docker --version
     - docker info
-  script:
-    - echo "FULL_IMAGE: $FULL_IMAGE"
-    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-    - docker pull "$FULL_IMAGE"
-    - docker service update --with-registry-auth --image "$FULL_IMAGE" "$SERVICE_NAME"
-    - echo "Service update completed successfully!"
+  script: |
+    echo "FULL_IMAGE: $FULL_IMAGE"
+    echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    docker pull "$FULL_IMAGE"
+    docker service update --with-registry-auth --image "$FULL_IMAGE" "$SERVICE_NAME"
+    echo "Service update completed successfully!"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   dependencies:
