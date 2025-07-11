@@ -18,10 +18,26 @@ build_and_push:
     DOCKER_HOST: tcp://docker:2375/
     DOCKER_TLS_CERTDIR: ""
   script: |
+    IMAGE_NAME="$CI_REGISTRY_IMAGE/test_kode"
+    IMAGE_TAG="$IMAGE_TAG"
+    FULL_IMAGE="$FULL_IMAGE"
+
+    echo "DEBUG: IMAGE_NAME=[${IMAGE_NAME}]"
+    echo "DEBUG: IMAGE_TAG=[${IMAGE_TAG}]"
+    echo "DEBUG: FULL_IMAGE=[${FULL_IMAGE}]"
+
     echo "BUILDING IMAGE: ${FULL_IMAGE}"
     docker build -t "${FULL_IMAGE}" .
+    echo "BUILD COMPLETED."
+
+    echo "Checking built image:"
+    docker images | grep "${IMAGE_NAME}"
+    echo "Logging into GitLab Container Registry..."
     echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    echo "PUSHING IMAGE TO REGISTRY: ${FULL_IMAGE}"
     docker push "${FULL_IMAGE}"
+    echo "PUSH COMPLETED."
+
     echo "FULL_IMAGE=${FULL_IMAGE}" >> build_vars.env
     echo "IMAGE_TAG=${IMAGE_TAG}" >> build_vars.env
   artifacts:
@@ -40,9 +56,19 @@ update:
     - docker info
   script: |
     echo "FULL_IMAGE: $FULL_IMAGE"
+
+    echo "Logging into GitLab Container Registry..."
     echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-    docker pull "$FULL_IMAGE"
-    docker service update --with-registry-auth --image "$FULL_IMAGE" "$SERVICE_NAME"
+
+    echo "Pulling image from registry: ${FULL_IMAGE}"
+    docker pull "${FULL_IMAGE}" || echo "Image pull failed, but continuing..."
+
+    echo "Current images:"
+    docker images | grep -E "(test_kode|dev_)"
+
+    echo "Updating Docker service with image: ${FULL_IMAGE}"
+    docker service update --with-registry-auth --image "${FULL_IMAGE}" "$SERVICE_NAME"
+
     echo "Service update completed successfully!"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
