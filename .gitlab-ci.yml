@@ -22,7 +22,16 @@ build_and_push:
       CLEAN_JOB_TOKEN=$(echo "$CI_JOB_TOKEN" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
       
       IMAGE_NAME="${CLEAN_REGISTRY_IMAGE}/test_kode"
-      IMAGE_TAG="dev_${CI_PIPELINE_ID}"
+      
+      # Git tag bazlı versiyon
+      # Mevcut tag sayısını al ve 1 ekle
+      TAG_COUNT=$(git tag --list | wc -l)
+      BUILD_NUMBER=$((TAG_COUNT + 1))
+      
+      echo "Current tag count: $TAG_COUNT"
+      echo "Build number: $BUILD_NUMBER"
+      
+      IMAGE_TAG="dev_${BUILD_NUMBER}"
       FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
       
       echo "DEBUG: CLEAN_REGISTRY=[${CLEAN_REGISTRY}]"
@@ -42,6 +51,7 @@ build_and_push:
       
       # Sonraki job için değişkenleri export et
       echo "FULL_IMAGE=${FULL_IMAGE}" >> build_vars.env
+      echo "BUILD_NUMBER=${BUILD_NUMBER}" >> build_vars.env
       echo "CLEAN_REGISTRY=${CLEAN_REGISTRY}" >> build_vars.env
       echo "CLEAN_REGISTRY_USER=${CLEAN_REGISTRY_USER}" >> build_vars.env
       echo "CLEAN_JOB_TOKEN=${CLEAN_JOB_TOKEN}" >> build_vars.env
@@ -69,7 +79,12 @@ update:
       if [ -z "$FULL_IMAGE" ]; then
         CLEAN_REGISTRY_IMAGE=$(echo "$CI_REGISTRY_IMAGE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
         IMAGE_NAME="${CLEAN_REGISTRY_IMAGE}/test_kode"
-        IMAGE_TAG="dev_${CI_PIPELINE_ID}"
+        
+        # Git tag bazlı versiyon
+        TAG_COUNT=$(git tag --list | wc -l)
+        BUILD_NUMBER=$((TAG_COUNT + 1))
+        
+        IMAGE_TAG="dev_${BUILD_NUMBER}"
         FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
       fi
 
