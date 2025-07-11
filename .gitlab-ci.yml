@@ -3,6 +3,8 @@ stages:
   - update
 variables:
   SERVICE_NAME: dev_frontend
+  IMAGE_TAG: dev_${CI_PIPELINE_IID}
+  FULL_IMAGE: $CI_REGISTRY_IMAGE/test_kode:$IMAGE_TAG
 build_and_push:
   stage: build_push
   image: docker:latest
@@ -11,98 +13,59 @@ build_and_push:
   variables:
     DOCKER_HOST: tcp://docker:2375/
     DOCKER_TLS_CERTDIR: ""
-  script:
-    - |
-      # Tüm GitLab CI değişkenlerini temizle ve değerleri oluştur
-      CLEAN_REGISTRY_IMAGE=$(echo "$CI_REGISTRY_IMAGE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
-      CLEAN_REGISTRY=$(echo "$CI_REGISTRY" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
-      CLEAN_REGISTRY_USER=$(echo "$CI_REGISTRY_USER" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
-      CLEAN_JOB_TOKEN=$(echo "$CI_JOB_TOKEN" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
-      
-      IMAGE_NAME="${CLEAN_REGISTRY_IMAGE}/test_kode"
-      
-      # Git tag bazlı versiyon
-      # Mevcut tag sayısını al ve 1 ekle
-      TAG_COUNT=$(git tag --list | wc -l)
-      BUILD_NUMBER=$((TAG_COUNT + 1))
-      
-      echo "Current tag count: $TAG_COUNT"
-      echo "Build number: $BUILD_NUMBER"
-      
-      IMAGE_TAG="dev_${BUILD_NUMBER}"
-      FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
-      
-      echo "DEBUG: CLEAN_REGISTRY=[${CLEAN_REGISTRY}]"
-      echo "DEBUG: CLEAN_REGISTRY_USER=[${CLEAN_REGISTRY_USER}]"
-      echo "DEBUG: IMAGE_NAME=[${IMAGE_NAME}]"
-      echo "DEBUG: IMAGE_TAG=[${IMAGE_TAG}]"
-      echo "DEBUG: FULL_IMAGE=[${FULL_IMAGE}]"
-      
-      echo "BUILDING IMAGE: ${FULL_IMAGE}"
-      docker build -t "${FULL_IMAGE}" .
-      echo "BUILD COMPLETED."
-      
-      # Build sonrası image'ı kontrol et
-      echo "Checking built image:"
-      docker images | grep "${IMAGE_NAME}"
-      echo "Logging into GitLab Container Registry..."
-      echo "$CLEAN_JOB_TOKEN" | docker login -u "$CLEAN_REGISTRY_USER" --password-stdin "$CLEAN_REGISTRY"
-      echo "PUSHING IMAGE TO REGISTRY: ${FULL_IMAGE}"
-      docker push "${FULL_IMAGE}"
-      echo "PUSH COMPLETED."
-      
-      # Sonraki job için değişkenleri export et
-      echo "FULL_IMAGE=${FULL_IMAGE}" >> build_vars.env
-      echo "BUILD_NUMBER=${BUILD_NUMBER}" >> build_vars.env
-      echo "CLEAN_REGISTRY=${CLEAN_REGISTRY}" >> build_vars.env
-      echo "CLEAN_REGISTRY_USER=${CLEAN_REGISTRY_USER}" >> build_vars.env
-      echo "CLEAN_JOB_TOKEN=${CLEAN_JOB_TOKEN}" >> build_vars.env
+  script: |
+    IMAGE_NAME="$CI_REGISTRY_IMAGE/test_kode"
+    IMAGE_TAG="$IMAGE_TAG"
+    FULL_IMAGE="$FULL_IMAGE"
+
+    echo "DEBUG: IMAGE_NAME=[${IMAGE_NAME}]"
+    echo "DEBUG: IMAGE_TAG=[${IMAGE_TAG}]"
+    echo "DEBUG: FULL_IMAGE=[${FULL_IMAGE}]"
+
+    echo "BUILDING IMAGE: ${FULL_IMAGE}"
+    docker build -t "${FULL_IMAGE}" .
+    echo "BUILD COMPLETED."
+
+    echo "Checking built image:"
+    docker images | grep "${IMAGE_NAME}"
+    echo "Logging into GitLab Container Registry..."
+    echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    echo "PUSHING IMAGE TO REGISTRY: ${FULL_IMAGE}"
+    docker push "${FULL_IMAGE}"
+    echo "PUSH COMPLETED."
+
+    echo "FULL_IMAGE=${FULL_IMAGE}" >> build_vars.env
+    echo "IMAGE_TAG=${IMAGE_TAG}" >> build_vars.env
   artifacts:
     reports:
       dotenv: build_vars.env
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-# Shell executor için düzeltilmiş update job
 update:
   stage: update
   tags:
     - 60.33_runner
-  # Shell executor için image ve services tanımlamıyoruz
   before_script:
     - echo "Checking Docker availability..."
     - docker --version
     - docker info
-  script:
-    - |
-      echo "FULL_IMAGE: $FULL_IMAGE"
-      
-      # Eğer önceki job'dan gelen değişkenler yoksa, yeniden oluştur
-      if [ -z "$FULL_IMAGE" ]; then
-        CLEAN_REGISTRY_IMAGE=$(echo "$CI_REGISTRY_IMAGE" | tr -d '\n\r' | sed 's/[[:space:]]*$//')
-        IMAGE_NAME="${CLEAN_REGISTRY_IMAGE}/test_kode"
-        
-        # Git tag bazlı versiyon
-        TAG_COUNT=$(git tag --list | wc -l)
-        BUILD_NUMBER=$((TAG_COUNT + 1))
-        
-        IMAGE_TAG="dev_${BUILD_NUMBER}"
-        FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
-      fi
-      echo "Logging into GitLab Container Registry..."
-      echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-      
-      # Registry'den image'ı pull et (eğer yoksa)
-      echo "Pulling image from registry: ${FULL_IMAGE}"
-      docker pull "${FULL_IMAGE}" || echo "Image pull failed, but continuing..."
-      
-      # Mevcut image'ları kontrol et
-      echo "Current images:"
-      docker images | grep -E "(test_kode|dev_)"
-      
-      echo "Updating Docker service with image: ${FULL_IMAGE}"
-      docker service update --with-registry-auth --image "${FULL_IMAGE}" "$SERVICE_NAME"
-      
-      echo "Service update completed successfully!"
+  script: |
+    echo "FULL_IMAGE: $FULL_IMAGE"
+
+    echo "Logging into GitLab Container Registry..."
+    echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+
+    echo "Pulling image from registry: ${FULL_IMAGE}"
+    docker pull "${FULL_IMAGE}" || echo "Image pull failed, but continuing..."
+
+    echo "Current images:"
+    docker images | grep -E "(test_kode|dev_)"
+
+    echo "Updating Docker service with image: ${FULL_IMAGE}"
+    docker service update --with-registry-auth --image "${FULL_IMAGE}" "$SERVICE_NAME"
+
+    echo "Service update completed successfully!"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   dependencies:
+    - build_and_push
