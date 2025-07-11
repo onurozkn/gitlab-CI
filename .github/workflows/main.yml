@@ -11,9 +11,8 @@ jobs:
     steps:
       - name: Trigger GitLab Pipeline
         run: |
-          curl -X POST \
-            -F token=$GITLAB_TOKEN \
-            -F ref=main \
-            https://gitlab.com/api/v4/projects/71488582/trigger/pipeline
+          curl -X POST https://gitlab.com/api/v4/projects/71488582/trigger/pipeline \
+            --data-urlencode "token=$GITLAB_TOKEN" \
+            --data-urlencode "ref=main"
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
