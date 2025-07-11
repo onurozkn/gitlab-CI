@@ -24,4 +24,4 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: |
           git remote add gitlab https://oauth2:${GITLAB_TOKEN}@gitlab.com/onur_ozkan/gitlab-CI.git
-          git push gitlab main
+          git push --force gitlab main
