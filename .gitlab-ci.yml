@@ -11,7 +11,7 @@ build_and_push:
   stage: build_push
   image: docker:latest
   tags:
-    - 60.33_docker_runner
+    - 60.33_runner
   services:
     - docker:dind
   variables:
@@ -49,7 +49,7 @@ build_and_push:
 update:
   stage: update
   tags:
-    - 60.33_docker_runner
+    - 60.33_runner
   before_script:
     - echo "Checking Docker availability..."
     - docker --version
