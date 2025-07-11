@@ -37,11 +37,16 @@ build_and_push:
       echo "DEBUG: CLEAN_REGISTRY=[${CLEAN_REGISTRY}]"
       echo "DEBUG: CLEAN_REGISTRY_USER=[${CLEAN_REGISTRY_USER}]"
       echo "DEBUG: IMAGE_NAME=[${IMAGE_NAME}]"
+      echo "DEBUG: IMAGE_TAG=[${IMAGE_TAG}]"
       echo "DEBUG: FULL_IMAGE=[${FULL_IMAGE}]"
       
       echo "BUILDING IMAGE: ${FULL_IMAGE}"
       docker build -t "${FULL_IMAGE}" .
       echo "BUILD COMPLETED."
+      
+      # Build sonrası image'ı kontrol et
+      echo "Checking built image:"
+      docker images | grep "${IMAGE_NAME}"
 
       echo "Logging into GitLab Container Registry..."
       echo "$CLEAN_JOB_TOKEN" | docker login -u "$CLEAN_REGISTRY_USER" --password-stdin "$CLEAN_REGISTRY"
@@ -90,6 +95,14 @@ update:
 
       echo "Logging into GitLab Container Registry..."
       echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+      
+      # Registry'den image'ı pull et (eğer yoksa)
+      echo "Pulling image from registry: ${FULL_IMAGE}"
+      docker pull "${FULL_IMAGE}" || echo "Image pull failed, but continuing..."
+      
+      # Mevcut image'ları kontrol et
+      echo "Current images:"
+      docker images | grep -E "(test_kode|dev_)"
       
       echo "Updating Docker service with image: ${FULL_IMAGE}"
       docker service update --with-registry-auth --image "${FULL_IMAGE}" "$SERVICE_NAME"
