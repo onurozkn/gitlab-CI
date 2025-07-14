@@ -1,6 +1,23 @@
 # 🚀 GitLab CI/CD Automated Docker Build & Deploy
-[![Last Commit](https://img.shields.io/github/last-commit/onurozkn/gitlab-CI)](https://github.com/onurozkn/gitlab-CI/commits/main)
-[![Build & Deploy](https://github.com/onurozkn/gitlab-CI/actions/workflows/main.yml/badge.svg)](https://github.com/onurozkn/gitlab-CI/actions/workflows/main.yml)
+<p align="center">
+  
+  <!-- Build & Deploy (GitHub Actions) -->
+  <a href="https://github.com/onurozkn/gitlab-CI/actions/workflows/main.yml" title="GitHub Actions Build & Deploy">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/githubactions/githubactions-original.svg" alt="GitHub Actions" width="28" style="vertical-align: middle; margin-right: 4px;"/>
+    <img src="https://github.com/onurozkn/gitlab-CI/actions/workflows/main.yml/badge.svg" alt="Build & Deploy" style="vertical-align: middle;"/>
+  </a>
+  &nbsp;&nbsp;
+  <!-- GitLab Pipeline -->
+  <a href="https://gitlab.com/onur_ozkan/gitlab-ci/-/pipelines" title="GitLab Pipeline">
+    <img src="https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png" alt="GitLab" width="45" style="vertical-align: middle; margin-right: 4px;"/>
+    <img src="https://gitlab.com/onur_ozkan/gitlab-ci/badges/main/pipeline.svg" alt="GitLab Pipeline Status" style="vertical-align: middle;"/>
+  &nbsp;&nbsp;
+  </a>
+      <a href="https://github.com/onurozkn/gitlab-CI/commits/main" title="Last Commit">
+    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" width="28" style="vertical-align: middle; margin-right: 4px;"/>
+    <img src="https://img.shields.io/github/last-commit/onurozkn/gitlab-CI" alt="Last Commit" style="vertical-align: middle;"/>
+  </a>
+</p>
 > **Automated CI/CD pipeline for building, pushing, and deploying Docker images using GitLab and GitHub Actions.**
 
 ---
