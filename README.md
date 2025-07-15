@@ -17,6 +17,7 @@
     <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" width="28" style="vertical-align: middle; margin-right: 4px;"/>
     <img src="https://img.shields.io/github/last-commit/onurozkn/gitlab-CI" alt="Last Commit" style="vertical-align: middle;"/>
   </a>
+  <a href="https://gitlab.com/onur_ozkan/gitlab-CI/-/releases"><img alt="Latest Release" src="https://gitlab.com/onur_ozkan/gitlab-CI/-/badges/release.svg" /></a>
 </p>
 > **Automated CI/CD pipeline for building, pushing, and deploying Docker images using GitLab and GitHub Actions.**
 
