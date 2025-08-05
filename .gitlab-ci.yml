@@ -8,7 +8,7 @@ variables:
   SERVICE_NAME: dev_frontend
   IMAGE_TAG: dev_${CI_PIPELINE_IID}
   FULL_IMAGE: $CI_REGISTRY_IMAGE/test_kode:$IMAGE_TAG
-  KUBE_NAMESPACE: default
+  KUBE_NAMESPACE: "default"
 
 build_and_push:
   stage: build_push
@@ -85,8 +85,13 @@ k8s_deploy:
     entrypoint: [""]
   before_script:
     - echo "Setting up kubectl context..."
-    - echo KUBE_NAMESPACE:$KUBE_NAMESPACE
-    - echo IMAGE_TAG:$IMAGE_TAG
+    - echo "KUBE_NAMESPACE: $KUBE_NAMESPACE"
+    - echo "IMAGE_TAG: $IMAGE_TAG"
+    - apk add --no-cache kubectl
+    - kubectl version --client
+    - echo "Checking kubectl context..."
+    - kubectl config current-context || echo "No context set"
+    - kubectl get nodes || echo "Cannot connect to cluster"
   script: |
     echo "Main branch için Kubernetes + Helm deploy başlatılıyor..."
     helm upgrade --install my-app ./helm-chart \
