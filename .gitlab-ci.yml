@@ -1,11 +1,15 @@
 stages:
   - build_push
   - update
+  - k8s_deploy
   - release
+
 variables:
   SERVICE_NAME: dev_frontend
   IMAGE_TAG: dev_${CI_PIPELINE_IID}
   FULL_IMAGE: $CI_REGISTRY_IMAGE/test_kode:$IMAGE_TAG
+  KUBE_NAMESPACE: default
+
 build_and_push:
   stage: build_push
   image: docker:latest
@@ -42,6 +46,8 @@ build_and_push:
       dotenv: build_vars.env
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "test"
+
 update:
   stage: update
   tags:
@@ -68,8 +74,32 @@ update:
     echo "Service update completed successfully!"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "test"
   dependencies:
     - build_and_push
+
+k8s_deploy:
+  stage: k8s_deploy
+  image:
+    name: alpine/helm:3.14.0
+    entrypoint: [""]
+  before_script:
+    - echo "Setting up kubectl context..."
+    - echo "KUBE_NAMESPACE: $KUBE_NAMESPACE"
+    - echo "IMAGE_TAG: $IMAGE_TAG"
+  script:
+    - echo "Main branch için Kubernetes + Helm deploy başlatılıyor..."
+    - helm upgrade --install my-app ./helm-chart \
+        --namespace "$KUBE_NAMESPACE" \
+        --set image.repository="$CI_REGISTRY_IMAGE/test_kode" \
+        --set image.tag="$IMAGE_TAG" \
+        --set namespace="$KUBE_NAMESPACE"
+    - helm status my-app --namespace "$KUBE_NAMESPACE"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  dependencies:
+    - build_and_push
+
 release:
   stage: release
   image: alpine:latest
@@ -90,3 +120,4 @@ release:
     - if: $CI_COMMIT_BRANCH == "main"
   dependencies:
     - update
+    - k8s_deploy

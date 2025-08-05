@@ -1,3 +1,14 @@
+# Proje: Docker + Kubernetes CI/CD Örneği
+
+[![pipeline status](https://gitlab.com/onur_ozkan/gitlab-CI/badges/main/pipeline.svg)](https://gitlab.com/onur_ozkan/gitlab-CI/pipelines)
+
+## Ortamlar ve Deploy Yöntemleri
+
+- **Test Ortamı (test branch):** Docker/Swarm ile deploy edilir. `docker-compose.yml` kullanılır.
+- **Main/Production Ortamı (main branch):** Kubernetes + Helm ile deploy edilir. `helm-chart/` dizini ve Helm chart kullanılır.
+
+Aşağıda ortamlar için deploy adımları ve pipeline işleyişi detaylandırılmıştır.
+
 # 🚀 GitLab CI/CD Automated Docker Build & Deploy
 <p align="center">
   

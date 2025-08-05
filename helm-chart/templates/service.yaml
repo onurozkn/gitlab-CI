@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app
+  namespace: {{ .Values.namespace | default "default" }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: my-app
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 3000 

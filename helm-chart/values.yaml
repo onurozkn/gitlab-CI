@@ -1,0 +1,13 @@
+image:
+  repository: registry.gitlab.com/onur_ozkan/gitlab-ci/test_kode
+  tag: "{{ .Values.image.tag | default .Chart.AppVersion }}"
+ 
+service:
+  type: ClusterIP
+  port: 80
+
+# Kubernetes namespace
+namespace: default
+
+# Replica count
+replicaCount: 1 
