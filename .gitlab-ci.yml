@@ -8,7 +8,7 @@ variables:
   SERVICE_NAME: dev_frontend
   IMAGE_TAG: dev_${CI_PIPELINE_IID}
   FULL_IMAGE: $CI_REGISTRY_IMAGE/test_kode:$IMAGE_TAG
-  KUBE_NAMESPACE: "default"
+  KUBE_NAMESPACE: default
 
 build_and_push:
   stage: build_push
@@ -84,22 +84,36 @@ k8s_deploy:
     name: alpine/helm:3.14.0
     entrypoint: [""]
   before_script:
+    - apk add --no-cache curl
+    - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    - chmod +x kubectl
+    - mv kubectl /usr/local/bin/
     - echo "Setting up kubectl context..."
-    - echo "KUBE_NAMESPACE: $KUBE_NAMESPACE"
-    - echo "IMAGE_TAG: $IMAGE_TAG"
-    - apk add --no-cache kubectl
-    - kubectl version --client
-    - echo "Checking kubectl context..."
-    - kubectl config current-context || echo "No context set"
-    - kubectl get nodes || echo "Cannot connect to cluster"
+    - mkdir -p ~/.kube
+    - echo "$KUBE_CONFIG" | base64 -d > ~/.kube/config
+    - chmod 600 ~/.kube/config
+    - kubectl config current-context
+    - kubectl get nodes
+    - echo KUBE_NAMESPACE:$KUBE_NAMESPACE
+    - echo IMAGE_TAG:$IMAGE_TAG
   script: |
     echo "Main branch için Kubernetes + Helm deploy başlatılıyor..."
+    
+    # Namespace oluştur (yoksa)
+    kubectl create namespace "$KUBE_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+    
+    # Helm deploy
     helm upgrade --install my-app ./helm-chart \
       --namespace "$KUBE_NAMESPACE" \
       --set image.repository="$CI_REGISTRY_IMAGE/test_kode" \
       --set image.tag="$IMAGE_TAG" \
-      --set namespace="$KUBE_NAMESPACE"
+      --set namespace="$KUBE_NAMESPACE" \
+      --create-namespace
+    
     helm status my-app --namespace "$KUBE_NAMESPACE"
+    
+    # Pod durumlarını kontrol et
+    kubectl get pods -n "$KUBE_NAMESPACE"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   dependencies:
