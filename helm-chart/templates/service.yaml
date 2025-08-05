@@ -9,4 +9,7 @@ spec:
     app: my-app
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: 3000 
+      targetPort: 3000
+      {{- if .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }} 
