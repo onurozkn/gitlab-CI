@@ -45,7 +45,7 @@ build_and_push:
 update:
   stage: update
   tags:
-    - 60.33_runner
+    - local
   before_script:
     - echo "Checking Docker availability..."
     - docker --version
