@@ -1,5 +1,8 @@
+stages:
+  - test_kube_config
+
 test_kube_config:
-  stage: k8s_deploy
+  stage: test_kube_config
   image: alpine:latest
   script:
     - echo "Testing KUBE_CONFIG variable..."
