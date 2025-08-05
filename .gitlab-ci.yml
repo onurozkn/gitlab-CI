@@ -85,16 +85,16 @@ k8s_deploy:
     entrypoint: [""]
   before_script:
     - echo "Setting up kubectl context..."
-    - echo "KUBE_NAMESPACE: $KUBE_NAMESPACE"
-    - echo "IMAGE_TAG: $IMAGE_TAG"
-  script:
-    - echo "Main branch için Kubernetes + Helm deploy başlatılıyor..."
-    - helm upgrade --install my-app ./helm-chart \
-        --namespace "$KUBE_NAMESPACE" \
-        --set image.repository="$CI_REGISTRY_IMAGE/test_kode" \
-        --set image.tag="$IMAGE_TAG" \
-        --set namespace="$KUBE_NAMESPACE"
-    - helm status my-app --namespace "$KUBE_NAMESPACE"
+    - echo KUBE_NAMESPACE:$KUBE_NAMESPACE
+    - echo IMAGE_TAG:$IMAGE_TAG
+  script: |
+    echo "Main branch için Kubernetes + Helm deploy başlatılıyor..."
+    helm upgrade --install my-app ./helm-chart \
+      --namespace "$KUBE_NAMESPACE" \
+      --set image.repository="$CI_REGISTRY_IMAGE/test_kode" \
+      --set image.tag="$IMAGE_TAG" \
+      --set namespace="$KUBE_NAMESPACE"
+    helm status my-app --namespace "$KUBE_NAMESPACE"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   dependencies:
