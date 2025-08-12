@@ -2,12 +2,14 @@
 
 [![pipeline status](https://gitlab.com/onur_ozkan/gitlab-CI/badges/main/pipeline.svg)](https://gitlab.com/onur_ozkan/gitlab-CI/pipelines)
 
-## Ortamlar ve Deploy Yöntemleri
+## Deployment Methods
 
-- **Test Ortamı (test branch):** Docker/Swarm ile deploy edilir. `docker-compose.yml` kullanılır.
-- **Main/Production Ortamı (main branch):** Kubernetes + Helm ile deploy edilir. `helm-chart/` dizini ve Helm chart kullanılır.
 
-Aşağıda ortamlar için deploy adımları ve pipeline işleyişi detaylandırılmıştır.
+- **Test Environment (test branch):** Deployed using Docker/Swarm with `docker-compose.yml`.  
+- **Main/Production Environment (main branch):** Deployed using Kubernetes + Helm with the `helm-chart/` directory and Helm chart.
+
+Below are the deployment steps and pipeline workflow detailed for the environments.
+
 
 # 🚀 GitLab CI/CD Automated Docker Build & Deploy
 <p align="center">
