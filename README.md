@@ -1,4 +1,4 @@
-# Multi-Cloud CI/CD Pipeline with GitLab & GitHub Integration
+# Automated CI/CD Pipeline with GitLab & GitHub Integration
 
 <p align="center">
   <a href="https://github.com/onurozkn/gitlab-CI/actions/workflows/main.yml">
@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <strong>Enterprise-grade CI/CD pipeline orchestrating automated deployments across multiple environments using GitLab CI/CD, GitHub Actions, Kubernetes, and Docker Swarm.</strong>
+  <strong>Comprehensive CI/CD pipeline orchestrating automated deployments across multiple environments using GitLab CI/CD, GitHub Actions, Kubernetes, and Docker Swarm.</strong>
 </p>
 
 ---
@@ -260,3 +260,7 @@ kubectl cluster-info
 ```bash
 docker login registry.gitlab.com -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN
 ```
+
+---
+**Note**: Remember to update credentials, server endpoints, and environment-specific configurations.
+
