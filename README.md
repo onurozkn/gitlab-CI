@@ -1,149 +1,262 @@
-# Proje: Docker + Kubernetes CI/CD Örneği
+# Multi-Cloud CI/CD Pipeline with GitLab & GitHub Integration
 
-[![pipeline status](https://gitlab.com/onur_ozkan/gitlab-CI/badges/main/pipeline.svg)](https://gitlab.com/onur_ozkan/gitlab-CI/pipelines)
-
-## Deployment Methods
-
-
-- **Test Environment (test branch):** Deployed using Docker/Swarm with `docker-compose.yml`.  
-- **Main/Production Environment (main branch):** Deployed using Kubernetes + Helm with the `helm-chart/` directory and Helm chart.
-
-Below are the deployment steps and pipeline workflow detailed for the environments.
-
-
-# 🚀 GitLab CI/CD Automated Docker Build & Deploy
 <p align="center">
-  
-  <!-- Build & Deploy (GitHub Actions) -->
-  <a href="https://github.com/onurozkn/gitlab-CI/actions/workflows/main.yml" title="GitHub Actions Build & Deploy">
-    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/githubactions/githubactions-original.svg" alt="GitHub Actions" width="28" style="vertical-align: middle; margin-right: 4px;"/>
-    <img src="https://github.com/onurozkn/gitlab-CI/actions/workflows/main.yml/badge.svg" alt="Build & Deploy" style="vertical-align: middle;"/>
+  <a href="https://github.com/onurozkn/gitlab-CI/actions/workflows/main.yml">
+    <img src="https://github.com/onurozkn/gitlab-CI/actions/workflows/main.yml/badge.svg" alt="GitHub Actions Sync"/>
   </a>
-  &nbsp;&nbsp;
-  <!-- GitLab Pipeline -->
-  <a href="https://gitlab.com/onur_ozkan/gitlab-ci/-/pipelines" title="GitLab Pipeline">
-    <img src="https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png" alt="GitLab" width="45" style="vertical-align: middle; margin-right: 4px;"/>
-    <img src="https://gitlab.com/onur_ozkan/gitlab-ci/badges/main/pipeline.svg" alt="GitLab Pipeline Status" style="vertical-align: middle;"/>
-  &nbsp;&nbsp;
+  <a href="https://gitlab.com/onur_ozkan/gitlab-ci/-/pipelines">
+    <img src="https://gitlab.com/onur_ozkan/gitlab-ci/badges/main/pipeline.svg" alt="GitLab Pipeline"/>
   </a>
-      <a href="https://github.com/onurozkn/gitlab-CI/commits/main" title="Last Commit">
-    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" width="28" style="vertical-align: middle; margin-right: 4px;"/>
-    <img src="https://img.shields.io/github/last-commit/onurozkn/gitlab-CI" alt="Last Commit" style="vertical-align: middle;"/>
+  <a href="https://gitlab.com/onur_ozkan/gitlab-CI/-/releases">
+    <img src="https://gitlab.com/onur_ozkan/gitlab-CI/-/badges/release.svg" alt="Latest Release"/>
   </a>
-  <a href="https://gitlab.com/onur_ozkan/gitlab-CI/-/releases"><img alt="Latest Release" src="https://gitlab.com/onur_ozkan/gitlab-CI/-/badges/release.svg" /></a>
+  <img src="https://img.shields.io/github/last-commit/onurozkn/gitlab-CI" alt="Last Commit"/>
 </p>
-> **Automated CI/CD pipeline for building, pushing, and deploying Docker images using GitLab and GitHub Actions.**
+
+<p align="center">
+  <strong>Enterprise-grade CI/CD pipeline orchestrating automated deployments across multiple environments using GitLab CI/CD, GitHub Actions, Kubernetes, and Docker Swarm.</strong>
+</p>
 
 ---
 
-## ✨ Features
+## 🏗️ Architecture Overview
 
-- 🔄 **Automatic Docker image build** on every push
-- 🏷️ **Auto-incremented tags** for each pipeline (e.g., `dev_1`, `dev_2`, ...)
-- 📦 **Pushes images to GitLab Container Registry**
-- 🚢 **Updates Docker Swarm service** on your server
-- 🔒 **Secure, fully automated workflow**
-
----
-
-## 🛠️ How It Works
-
-1. **build_and_push**: Builds the Docker image and pushes it to the GitLab Container Registry.
-2. **update**: Updates the Docker Swarm service on your server with the new image.
-
----
-
-## ⚙️ Key Variables in `.gitlab-ci.yml`
-
-- `SERVICE_NAME`: Name of the Docker Swarm service to update
-- `CI_PIPELINE_IID`: Auto-incremented unique number for each pipeline (used for tagging)
-- `CI_REGISTRY_IMAGE`, `CI_REGISTRY_USER`, `CI_JOB_TOKEN`: Provided by GitLab
-- `SSH_PRIVATE_KEY`, `DEPLOY_USER`, `DEPLOY_SERVER`: Set as CI/CD variables for server access
-
----
-
-## 🚦 Example Pipeline Flow
+This project implements a sophisticated CI/CD workflow that automatically synchronizes code between GitHub and GitLab, triggering environment-specific deployments based on branch patterns:
 
 ```mermaid
-flowchart TD
-    A[Push to main branch] --> B[build_and_push job]
-    B --> C[update job]
-    C --> D[Service updated on server]
+graph TD
+    A[GitHub Repository] -->|GitHub Actions| B[GitLab Mirror]
+    B -->|Pipeline Trigger| C{Branch Detection}
+    C -->|main branch| D[Kubernetes + Helm Deployment]
+    C -->|test branch| E[Docker Swarm Deployment]
+    D --> F[Production Environment]
+    E --> G[Test Environment]
+    
+    style A fill:#333,stroke:#fff,color:#fff
+    style B fill:#FC6D26,stroke:#fff,color:#fff
+    style D fill:#326CE5,stroke:#fff,color:#fff
+    style E fill:#2496ED,stroke:#fff,color:#fff
 ```
 
 ---
 
-## 🚧 GitHub Actions Integration
+## 🚀 Key Features
 
-This project can also be integrated with GitHub Actions for code synchronization or additional automation. Example badge:
+### 🔄 **Automated Cross-Platform Sync**
+- GitHub Actions automatically mirrors code to GitLab
+- Zero-configuration synchronization on every push
+- Maintains commit history and branch structure
 
-[![Sync to GitLab](https://github.com/onurozkn/gitlab-CI/actions/workflows/main.yml/badge.svg)](https://github.com/onurozkn/gitlab-CI/actions/workflows/main.yml)
+### 🏷️ **Smart Versioning System**
+- Auto-incremented semantic tags (`dev_1`, `dev_2`, ...)
+- Pipeline-based version management
+- Immutable artifact storage
 
-- **How it works:**
-  - On every push to `main`, GitHub Actions can push your code to GitLab, triggering the GitLab CI/CD pipeline.
-  - You can add more badges for linting, tests, or deployment as needed.
+### 🎯 **Environment-Specific Deployments**
+- **Production (`main`)**: Kubernetes cluster with Helm charts
+- **Testing (`test`)**: Docker Swarm services
+- Branch-based deployment strategy
+
+### 🔐 **Enterprise Security**
+- Secure credential management via GitLab CI/CD variables
+- Registry authentication with job tokens
+- Encrypted kubeconfig handling
 
 ---
 
-## 🚀 Usage
+## 📋 Pipeline Stages
 
-1. **Set required variables in GitLab CI/CD > Settings > Variables:**
-   - `SSH_PRIVATE_KEY`, `DEPLOY_USER`, `DEPLOY_SERVER`
-2. **Ensure `.gitlab-ci.yml` is in your project root.**
-3. **Push your code!**
-   - Every push triggers the pipeline, builds the image, and updates your service.
+### 1. **Build & Push** 
+```yaml
+build_and_push:
+  - Builds Docker images with semantic versioning
+  - Pushes to GitLab Container Registry
+  - Generates deployment artifacts
+```
+
+### 2. **Environment Deployment**
+
+#### **Test Environment** (`test` branch)
+```yaml
+update:
+  - Deploys using Docker Swarm
+  - Updates existing services
+  - Rollback-ready configuration
+```
+
+#### **Production Environment** (`main` branch)
+```yaml
+k8s_deploy:
+  - Deploys via Kubernetes + Helm
+  - Namespace-isolated deployments
+  - Health checks and rollout validation
+```
+
+### 3. **Release Management**
+```yaml
+release:
+  - Creates Git tags
+  - Generates release notes
+  - Publishes to GitLab releases
+```
 
 ---
 
-## 🦊 GitLab Runner & Server Setup
+## 🛠️ Technology Stack
 
-> **To run your pipelines and deploy to your server, you need a GitLab Runner and some server/network setup.**
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Orchestration** | GitLab CI/CD | Pipeline automation & deployment |
+| **Sync** | GitHub Actions | Cross-platform code synchronization |
+| **Production** | Kubernetes + Helm | Container orchestration & package management |
+| **Testing** | Docker Swarm | Lightweight container orchestration |
+| **Registry** | GitLab Container Registry | Docker image storage |
+| **Runner** | Self-hosted GitLab Runner | Execution environment |
 
-### 1. Install GitLab Runner
+---
 
-On your server (or a dedicated CI server):
+## ⚙️ Configuration
+
+### Required GitLab CI/CD Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `KUBE_CONFIG` | Base64 encoded kubeconfig | `LS0tLS1CRUdJ...` |
+| `SSH_PRIVATE_KEY` | Private key for server access | `-----BEGIN RSA...` |
+| `DEPLOY_USER` | Deployment user | `deploy` |
+| `DEPLOY_SERVER` | Target server hostname | `production.example.com` |
+
+### Environment Variables
+
+| Variable | Auto-Generated | Description |
+|----------|----------------|-------------|
+| `CI_PIPELINE_IID` | ✅ | Unique pipeline identifier |
+| `CI_REGISTRY_IMAGE` | ✅ | Container registry URL |
+| `CI_JOB_TOKEN` | ✅ | Pipeline authentication token |
+| `SERVICE_NAME` | ❌ | Docker service name |
+| `KUBE_NAMESPACE` | ❌ | Kubernetes namespace |
+
+---
+
+## 🚦 Deployment Flow
+
+### **Test Environment Workflow**
+1. Push to `test` branch
+2. GitHub Actions syncs to GitLab
+3. GitLab pipeline builds Docker image
+4. Image pushed to registry with `dev_${CI_PIPELINE_IID}` tag
+5. Docker Swarm service updated on target server
+6. Health checks validate deployment
+
+### **Production Environment Workflow**
+1. Push/merge to `main` branch
+2. GitHub Actions syncs to GitLab
+3. GitLab pipeline builds Docker image
+4. Helm chart deployment to Kubernetes cluster
+5. Rolling update with zero-downtime
+6. Release creation with semantic versioning
+
+---
+
+## 🏃‍♂️ GitLab Runner Setup
+
+### Prerequisites
+- Linux server with Docker installed
+- Network access to GitLab.com and your deployment targets
+- Sufficient resources for build operations
+
+### Installation
+
 ```bash
-# For Ubuntu/Debian
-sudo apt-get install -y curl
-curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh | sudo bash
+# Install GitLab Runner
+curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
 sudo apt-get install gitlab-runner
 
-# For CentOS/RHEL
-curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh | sudo bash
-sudo yum install gitlab-runner
+# Register runner
+sudo gitlab-runner register \
+  --url "https://gitlab.com/" \
+  --registration-token "<YOUR_REGISTRATION_TOKEN>" \
+  --name "production-runner" \
+  --tag-list "local" \
+  --executor "shell" \
+  --non-interactive
+
+# Configure Docker permissions
+sudo usermod -aG docker gitlab-runner
+sudo systemctl restart gitlab-runner
 ```
 
-### 2. Register the Runner
-
+### Verification
 ```bash
-sudo gitlab-runner register
+sudo gitlab-runner verify
+sudo systemctl status gitlab-runner
 ```
-- Enter your GitLab instance URL (e.g., `https://gitlab.com/`)
-- Enter the registration token from **GitLab > Settings > CI/CD > Runners**
-- Choose executor: `docker` (recommended) or `shell`
-- Set tags (e.g., `60.33_docker_runner`)
-
-### 3. Make Sure the Runner is Active
-- Check in **GitLab > Settings > CI/CD > Runners** that your runner is online and tagged correctly.
-
-### 4. Server/Network Considerations
-- **If your server is not accessible from the internet:**
-  - The runner must be able to reach both GitLab and your deployment target (e.g., via VPN or internal network).
-  - If your server is firewalled, open the necessary ports for SSH and Docker communication.
-- **If using Docker-in-Docker (`docker:dind`):**
-  - Make sure the runner host has Docker installed and can run privileged containers if needed.
-
-### 5. Private Registry/Firewall Notes
-- If your server cannot access Docker Hub or GitLab Container Registry directly, consider using a proxy or mirror registry.
-- For private GitLab projects, make sure your runner has access to the repository and registry.
 
 ---
 
-## ❓ FAQ
+## 🐳 Local Development
 
-- **Why are tags auto-incremented?**
-  - Each pipeline gets a unique tag, so images never conflict and old versions are preserved.
-- **Are old images deleted?**
-  - No, old tags remain in the GitLab Container Registry.
-- **Which image is used on the server?**
-  - The latest tagged image is always deployed.
+### Quick Start
+```bash
+# Clone repository
+git clone https://github.com/onurozkn/gitlab-CI.git
+cd gitlab-CI
+
+# Build local image
+docker build -t local/test-app .
+
+# Run locally
+docker run -p 8080:80 local/test-app
+```
+
+### Testing Pipeline Locally
+```bash
+# Install gitlab-ci-local
+npm install -g gitlab-ci-local
+
+# Run pipeline locally
+gitlab-ci-local
+```
+
+---
+
+## 📊 Monitoring & Observability
+
+### Pipeline Metrics
+- Build success rate and duration
+- Deployment frequency and lead time
+- Mean time to recovery (MTTR)
+
+### Application Health
+- Kubernetes pod status and resource usage
+- Docker Swarm service health checks
+- Registry storage utilization
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### **Runner Offline**
+```bash
+sudo systemctl status gitlab-runner
+sudo journalctl -u gitlab-runner -f
+```
+
+#### **Docker Permission Denied**
+```bash
+sudo usermod -aG docker gitlab-runner
+sudo systemctl restart gitlab-runner
+```
+
+#### **Kubernetes Connection Issues**
+```bash
+kubectl config current-context
+kubectl cluster-info
+```
+
+#### **Registry Authentication**
+```bash
+docker login registry.gitlab.com -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN
+```
