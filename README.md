@@ -194,31 +194,6 @@ sudo systemctl status gitlab-runner
 
 ---
 
-## 🐳 Local Development
-
-### Quick Start
-```bash
-# Clone repository
-git clone https://github.com/onurozkn/gitlab-CI.git
-cd gitlab-CI
-
-# Build local image
-docker build -t local/test-app .
-
-# Run locally
-docker run -p 8080:80 local/test-app
-```
-
-### Testing Pipeline Locally
-```bash
-# Install gitlab-ci-local
-npm install -g gitlab-ci-local
-
-# Run pipeline locally
-gitlab-ci-local
-```
-
----
 
 ## 📊 Monitoring & Observability
 
